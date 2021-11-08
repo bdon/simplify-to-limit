@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+</body>
+<script>
+    let canvas = document.getElementById("canvas");
+    let ctx = canvas.getContext('2d');
+
+
+
+    fetch('ne_glaciated_feature.geojson').then(resp => {
+        return resp.json();
+    }).then(json => {
+        let geometry = json.features[0].geometry;
+        console.log(geometry.coordinates);
+
+        var minX = Infinity;
+        var minY = Infinity;
+        var maxX = -Infinity;
+        var maxY = -Infinity;
+        let coords_count = 0;
+
+        for (let ring of geometry.coordinates) {
+            for (let coord of ring) {
+                if (coord[0] < minX) minX = coord[0];
+                if (coord[1] < minY) minY = coord[1];
+                if (coord[0] > maxX) maxX = coord[0];
+                if (coord[1] > maxY) maxY = coord[1];
+                coords_count++;
+            }
+        }
+
+        let dpr = window.devicePixelRatio;
+        ctx.scale(dpr,dpr);
+        let aspect_ratio = (maxY-minY)/(maxX-minX);
+        canvas.width = 800 * dpr;
+        canvas.height = aspect_ratio * 800 * dpr;
+        canvas.style.width = 800 + "px";
+        canvas.style.height = aspect_ratio * 800 + "px";
+
+        let scale = Math.max(800/(maxX-minX),800/(maxY-minY));
+
+        ctx.scale(scale*2,-scale*2);
+        ctx.translate(-minX,-minY-(maxY-minY));
+
+        ctx.beginPath();
+        for (let ring of geometry.coordinates) {
+            for (var i = 0; i < ring.length; i++) {
+                if (i == 0) ctx.moveTo(ring[i][0],ring[i][1]);
+                else {
+                   ctx.lineTo(ring[i][0],ring[i][1]); 
+                }
+            }
+        }
+        ctx.fillStyle = "#333333";
+        ctx.fill();
+    })
+
+</script>
+</html>
