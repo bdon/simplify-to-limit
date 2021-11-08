@@ -3,19 +3,24 @@
 <head>
 </head>
 <body>
+    <div>
+        <h2>polygon-simplify-limit</h2>
+        vertices:
+        <input type="range" id="vertices" min="3" max="100"></input>
+        <span id="showVertices">?</span>
+    </div>
     <canvas id="canvas"></canvas>
 </body>
 <script>
     let canvas = document.getElementById("canvas");
     let ctx = canvas.getContext('2d');
 
-
+    document.getElementById("vertices")
 
     fetch('ne_glaciated_feature.geojson').then(resp => {
         return resp.json();
     }).then(json => {
         let geometry = json.features[0].geometry;
-        console.log(geometry.coordinates);
 
         var minX = Infinity;
         var minY = Infinity;
@@ -33,15 +38,25 @@
             }
         }
 
+        document.getElementById("showVertices").textContent = coords_count;
+        document.getElementById("vertices").max = coords_count;
+        document.getElementById("vertices").value = coords_count;
+
+        document.getElementById("vertices").oninput = e => {
+            document.getElementById("showVertices").textContent = e.target.value;
+        }
+
+        let WIDTH = 600;
+
         let dpr = window.devicePixelRatio;
         ctx.scale(dpr,dpr);
         let aspect_ratio = (maxY-minY)/(maxX-minX);
-        canvas.width = 800 * dpr;
-        canvas.height = aspect_ratio * 800 * dpr;
-        canvas.style.width = 800 + "px";
-        canvas.style.height = aspect_ratio * 800 + "px";
+        canvas.width = WIDTH * dpr;
+        canvas.height = aspect_ratio * WIDTH * dpr;
+        canvas.style.width = WIDTH + "px";
+        canvas.style.height = aspect_ratio * WIDTH + "px";
 
-        let scale = Math.max(800/(maxX-minX),800/(maxY-minY));
+        let scale = Math.max(WIDTH/(maxX-minX),WIDTH/(maxY-minY));
 
         ctx.scale(scale*2,-scale*2);
         ctx.translate(-minX,-minY-(maxY-minY));
